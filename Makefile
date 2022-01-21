@@ -1,5 +1,5 @@
 ifeq ($(PLATFORM),)
-	PLATFORM = rpi4A64
+	PLATFORM = Mister
 endif
 
 ifeq ($(PLATFORM),rpi4)
@@ -76,6 +76,16 @@ else ifeq ($(PLATFORM),rpi4A64)
   ifeq ($(USE_SDL_VERSION),)
     USE_SDL_VERSION = sdl1
   endif
+else ifeq ($(PLATFORM),Mister)
+	CPU_FLAGS += -march=armv7-a -mfpu=neon -mfloat-abi=hard -mtune=cortex-a9
+	MORE_CFLAGS += -DARMV6T2 -DUSE_ARMNEON -DRASPBERRY -DARMV6_ASSEMBLY
+  MORE_CFLAGS += -DFAST_COPPER_DEFAULT_ON
+  MORE_CFLAGS += -I/opt/vc/include -I/opt/vc/include/interface/vmcs_host/linux -I/opt/vc/include/interface/vcos/pthreads
+  LDFLAGS += -licui18n -licuuc -licudata -llzma -lfreetype -logg -lm -lX11 -L/opt/vc/lib
+  PROFILER_PATH = /home/pi/test/uae4arm
+  ifeq ($(USE_SDL_VERSION),)
+    USE_SDL_VERSION = sdl1
+  endif
 endif
 
 ifeq ($(USE_SDL_VERSION),)
@@ -84,9 +94,9 @@ endif
 
 NAME   = uae4arm
 RM     = rm -f
-CC     ?= gcc
-CXX    ?= g++
-STRIP  ?= strip
+CC     = arm-linux-gnueabihf-gcc
+CXX    = arm-linux-gnueabihf-g++
+STRIP  = arm-linux-gnueabihf-strip
 
 PROG   = $(NAME)
 
@@ -114,7 +124,7 @@ endif
 DEFS += `xml2-config --cflags`
 DEFS += -DCPU_arm
 DEFS += -DUSE_SDL
-#DEFS += -DWITH_LOGGING
+DEFS += -DWITH_LOGGING
 #DEFS += -DJIT_DEBUG
 
 ifeq ($(USE_SDL_VERSION),sdl2)
@@ -335,6 +345,8 @@ OBJS += src/osdep/raspi_gfxsdl1.o
 else ifeq ($(PLATFORM),rpiA64)
 OBJS += src/osdep/raspi_gfxsdl1.o
 else ifeq ($(PLATFORM),rpi4A64)
+OBJS += src/osdep/raspi_gfxsdl1.o
+else ifeq ($(PLATFORM),Mister)
 OBJS += src/osdep/raspi_gfxsdl1.o
 else
 OBJS += src/osdep/raspi_gfx.o
